@@ -2,9 +2,52 @@ import express from 'express'
 import http from 'http'
 import { Server } from 'socket.io'
 import cors from 'cors'
+import { PrismaClient } from "@prisma/client"
 
-import { fileURLToPath } from 'url'
-import { dirname, join } from 'path'
+const prisma = new PrismaClient()
+
+function crypting(text){
+  let cryptedText = "";
+  for (let i = 0; i < text.length; i ++){
+    let intChar = text.charCodeAt(i);
+    intChar = intChar ** 29;
+    intChar = intChar % 187;
+    cryptedText += String.fromCharCode(intChar);
+  }
+  return cryptedText;
+}
+
+function uncrypting(text){
+  let uncryptedText = "";
+  for (let i = 0; i < text.length; i ++){
+    let intChar = text.charCodeAt(i);
+    intChar = intChar ** 149;
+    intChar = intChar % 187;
+    uncryptedText += String.fromCharCode(intChar);
+  }
+  return uncryptedText;
+  
+}
+
+async function checkToken(content){
+  const user = await prisma.User.findUnique({
+    where : {
+      username : content.username,
+      token : content.token
+    }
+  });
+  if (user != null && content.token != null){
+    let valToken = atob(uncrypting(content.token));
+    let listTokenInfos = valToken.split("@");
+    if (listTokenInfos.length == 2){
+      let timeSinceCreation = Date.now() - parseInt(listTokenInfos[1]);
+      if (timeSinceCreation <= 7200000){
+        return true;
+      }
+    }
+  } 
+  return false; 
+}
 
 const app = express()
 const server = new http.Server(app)
@@ -24,9 +67,48 @@ app.use(cors({
 io.on('connection', (socket) => {
   //console.log("A user connected")
 
+  socket.on('connectionAttempt', async (content) => {
+    const user = await prisma.User.findUnique({
+      where : {
+        username : content.username,
+        password : content.password
+      }
+    });
+    if (user != null){
+      let valToken = user.username + ":" + user.id + "@" + toString(Date.now());
+      valToken = btoa(crypting(valToken));
+      const updateUser = await prisma.User.update({
+        where : {
+          id : user.id
+        },
+        data : {
+          token : valToken
+        }
+      })
+      socket.emit('connectionSuccess', {username : user.username, token : valToken})
+    }
+    else {
+      socket.emit('connectionFail');
+    }
+  })
+
+  socket.on('tokenConnection', async (content) => {
+    if (checkToken(content)){
+      socket.emit("tokenOK");
+    }
+    else {
+      socket.emit("tokenFail");
+    }
+  })
+
   socket.on('message', (content) => {
     //console.log(content.user + " sent " + content.message)
-    socket.broadcast.emit('message', content) 
+    if (checkToken(content)){
+      socket.broadcast.emit('message', {sender : content.username,message : content.message})
+    }
+    else {
+      socket.emit("tokenFail");
+    }
   })
 
   socket.on('disconnect', () => {

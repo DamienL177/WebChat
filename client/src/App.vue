@@ -60,6 +60,8 @@
 import { io } from "socket.io-client"
 import {ref} from "vue"
 
+let tokenOK = false;
+
 function showMessage(user, message, isLocalUser){
   let messageExemple = document.getElementById("exempleMessage");
   let messageDiv = messageExemple.cloneNode(true);
@@ -90,19 +92,30 @@ function showMessage(user, message, isLocalUser){
 
 const socket = io("http://localhost:3000");
 
-function sendMessage(){
-  console.log("test");
-  let user = "User"
-  let message = document.getElementById("writtenMessage").value;
+socket.send("token", {test:"test"});
 
-  if (message.trim()){
-    showMessage(user, message, true);
-    socket.emit("message", {user, message})
+function sendMessage(){
+  //console.log("test");
+  if (tokenOK){
+    let user = "User"
+    let message = document.getElementById("writtenMessage").value;
+    let token = "";
+
+    if (message.trim()){
+      showMessage(user, message, true);
+      socket.emit("message", {username : user, message : message, token : token})
+    }
+    document.getElementById("writtenMessage").value = "";
   }
-  document.getElementById("writtenMessage").value = "";
 }
 
+socket.on("tokenOK", () => {
+  tokenOK = true;
+})
+
 socket.on("message", (content) => {
-  showMessage(content.user, content.message, false);
+  if (tokenOK){
+    showMessage(content.user, content.message, false);
+  }
 })
 </script>
