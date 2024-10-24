@@ -5,6 +5,14 @@ import cors from 'cors'
 import { PrismaClient } from "@prisma/client"
 
 const prisma = new PrismaClient()
+/*
+let newUser = await prisma.user.create({
+  data: {
+    username: 'test',
+    password: 'Test',
+    token: ""
+  },
+})*/
 
 function crypting(text){
   let cryptedText = "";
@@ -30,14 +38,14 @@ function uncrypting(text){
 }
 
 async function checkToken(content){
-  const user = await prisma.User.findUnique({
+  const user = await prisma.User.findFirst({
     where : {
       username : content.username,
       token : content.token
     }
   });
   if (user != null && content.token != null){
-    let valToken = atob(uncrypting(content.token));
+    let valToken = uncrypting(content.token);
     let listTokenInfos = valToken.split("@");
     if (listTokenInfos.length == 2){
       let timeSinceCreation = Date.now() - parseInt(listTokenInfos[1]);
@@ -68,7 +76,7 @@ io.on('connection', (socket) => {
   //console.log("A user connected")
 
   socket.on('connectionAttempt', async (content) => {
-    const user = await prisma.User.findUnique({
+    const user = await prisma.User.findFirst({
       where : {
         username : content.username,
         password : content.password
@@ -76,7 +84,7 @@ io.on('connection', (socket) => {
     });
     if (user != null){
       let valToken = user.username + ":" + user.id + "@" + toString(Date.now());
-      valToken = btoa(crypting(valToken));
+      valToken = crypting(valToken);
       const updateUser = await prisma.User.update({
         where : {
           id : user.id
