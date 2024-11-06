@@ -14,7 +14,7 @@ let newUser = await prisma.user.create({
   },
 })*/
 
-function crypting(text){
+function encrypt(text){
   let cryptedText = "";
   for (let i = 0; i < text.length; i ++){
     let intChar = text.charCodeAt(i);
@@ -25,7 +25,7 @@ function crypting(text){
   return cryptedText;
 }
 
-function uncrypting(text){
+function decrypt(text){
   let uncryptedText = "";
   for (let i = 0; i < text.length; i ++){
     let intChar = text.charCodeAt(i);
@@ -45,7 +45,7 @@ async function checkToken(content){
     }
   });
   if (user != null && content.token != null){
-    let valToken = uncrypting(content.token);
+    let valToken = decrypt(content.token);
     let listTokenInfos = valToken.split("@");
     if (listTokenInfos.length == 2){
       let timeSinceCreation = Date.now() - parseInt(listTokenInfos[1]);
@@ -84,7 +84,7 @@ io.on('connection', (socket) => {
     });
     if (user != null){
       let valToken = user.username + ":" + user.id + "@" + toString(Date.now());
-      valToken = crypting(valToken);
+      valToken = encrypt(valToken);
       const updateUser = await prisma.User.update({
         where : {
           id : user.id
@@ -121,6 +121,27 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     //console.log("A user disconnected")
+  })
+
+  socket.on('logupAttempt', async (content) => {
+    const user = await prisma.User.findFirst({
+      where : {
+        username : content.username,
+      }
+    });
+    if (user == null){
+      let newUser = await prisma.user.create({
+        data: {
+          username: content.username,
+          password: content.password,
+          token: ""
+        },
+      })
+      socket.emit("logupSuccess");
+    }
+    else {
+      socket.emit("logupFailed", {error : "This username already exists"});
+    }
   })
 })
 

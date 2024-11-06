@@ -1,5 +1,14 @@
 <template>
-  <div class="flex h-screen w-screen overflow-hidden">
+  <div class="relative flex h-screen w-screen overflow-hidden">
+    <div id="logoutDiv" class="hidden absolute w-screen h-screen bg-gray-500/60">
+      <div class="absolute w-96 h-60 -translate-x-1/2 left-1/2 -translate-y-1/2 top-1/2 bg-white border-2 border-black rounded-3xl">
+        <div class="w-full h-1/2 font-bold text-5xl flex items-center justify-center">Log out?</div>
+        <div class="w-full h-1/2 grid grid-cols-2 p-5 gap-5">
+          <button id="hideLogoutButton" type="button" @click="changeVisibilityLogout" class="w-full h-full flex items-center justify-center rounded-xl text-white bg-red-600">No</button>
+          <button id="logoutButton" type="button" @click="logout" class="w-full h-full flex items-center justify-center rounded-xl text-white bg-green-600">Yes</button>
+        </div>
+      </div>
+    </div>
     <div class="w-1/4 h-full border-r-2 border-black flex flex-col">
       <div class="w-full h-36 text-center text-5xl flex justify-center items-center font-bold">ROOMS</div>
       <div class="w-full h-16 flex justify-center">
@@ -24,7 +33,7 @@
             </svg>
           </button>
         </div>
-        <button type="button" id="profileButton" class="col-span-3 w-full h-16 flex items-center p-2 border-l-2 border-black rounded-l-lg">
+        <button type="button" id="profileButton" @click="changeVisibilityLogout" class="col-span-3 w-full h-16 flex items-center p-2 border-l-2 border-black rounded-l-lg">
           <div class="max-w-1/4 h-full aspect-square">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" class="h-full w-full rounded-full border-2 border-black">
               <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z" clip-rule="evenodd" />
@@ -123,6 +132,21 @@ else {
   window.location.href = "/login";
 }
 
+function logout(){
+  sessionStorage.removeItem("chatRoomToken");
+  sessionStorage.removeItem("chatRoomUsername");
+  window.location.href = "/login";
+}
+
+function changeVisibilityLogout(){
+  let div = document.getElementById("logoutDiv");
+  if (div.classList.contains("hidden")){
+    div.classList.remove("hidden");
+  }
+  else {
+    div.classList.add("hidden");
+  }
+}
 
 function sendMessage(){
     //console.log("test");
