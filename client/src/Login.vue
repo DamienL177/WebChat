@@ -15,6 +15,7 @@
                     </div>
                     <label for="pwdInput" class="absolute top-0 left-8 text-md bg-white rounded-sm">Password</label>
                 </div>
+                <div id="textError" class="w-full h-fit text-red-600"></div>
             </div>
             <div class="h-full w-full pt-3">
                 <div class="w-full h-1/2 px-5">
@@ -30,18 +31,23 @@
 
 
 <script setup>
-// TODO : on failed login
+// TODO : hasher le password
 import { io } from "socket.io-client"
-import { createApp } from 'vue'
-import Main from './Main.vue'
 
-function encrypt(text){
+const n = 3233;
+const e = 17;
+
+function encrypt(text) {
   let cryptedText = "";
-  for (let i = 0; i < text.length; i ++){
+  for (let i = 0; i < text.length; i++) {
     let intChar = text.charCodeAt(i);
-    intChar = intChar ** 29;
-    intChar = intChar % 187;
-    cryptedText += String.fromCharCode(intChar);
+
+    // Exponentiation modulaire rapide
+    let encryptedChar = 1;
+    for (let j = 0; j < e; j++) {
+      encryptedChar = (encryptedChar * intChar) % n;
+    }
+    cryptedText += intChar + ";";
   }
   return cryptedText;
 }
@@ -52,18 +58,23 @@ function toLogUp(){
 
 const socket = io("http://localhost:3000");
 
-function connect(){
+async function connect(){
     let username = document.getElementById("usernameInput").value;
     let pwd = encrypt(document.getElementById("pwdInput").value);
+    document.getElementById("usernameInput").value = "";
+    document.getElementById("pwdInput").value = "";
   //console.log("test");
     if (username != null && pwd != null){
         socket.emit("connectionAttempt", {username : username, password : pwd})
     }
     else {
-        // TODO que faire en cas d'échec de connexion
-        console.log("probleme");
+        document.getElementById("textError").innerText = "Please fill both the username and password fields.";
     }
 }
+
+socket.on("connectionFail", (content) => {
+    document.getElementById("textError").innerText = content.error;
+})
 
 socket.on("connectionSuccess", (content) => {
     sessionStorage.setItem("chatRoomUsername", content.username);

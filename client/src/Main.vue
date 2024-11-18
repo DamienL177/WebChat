@@ -114,9 +114,11 @@ if (username != null && username != "" && token != null && token != ""){
     document.getElementById("username").textContent = username;
   })
 
-  socket.on("tokenFailed", () => {
+  socket.on("tokenFail", () => {
     console.log("tokenFailed");
     // TODO : quoi faire ici
+    alert("Token expired.");
+    logout();
   })
 
   socket.on("message", (content) => {
@@ -125,6 +127,8 @@ if (username != null && username != "" && token != null && token != ""){
     }
     else {
       // TODO : what to do when token not ok
+      alert("Token expired.");
+      logout();
     }
   })
 }
@@ -162,7 +166,8 @@ function sendMessage(){
       document.getElementById("writtenMessage").value = "";
     }
     else {
-      // TODO : what to do when token not ok
+      alert("Token expired.");
+      logout();
     }
   }
 </script>

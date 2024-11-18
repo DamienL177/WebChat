@@ -3,6 +3,8 @@ import http from 'http'
 import { Server } from 'socket.io'
 import cors from 'cors'
 import { PrismaClient } from "@prisma/client"
+import bcrypt from 'bcryptjs'
+import { hash } from 'crypto'
 
 const prisma = new PrismaClient()
 /*
@@ -14,27 +16,40 @@ let newUser = await prisma.user.create({
   },
 })*/
 
-function encrypt(text){
+const n = 3233;
+const e = 17;
+const d = 2753;
+
+function encrypt(text) {
   let cryptedText = "";
-  for (let i = 0; i < text.length; i ++){
+  for (let i = 0; i < text.length; i++) {
     let intChar = text.charCodeAt(i);
-    intChar = intChar ** 29;
-    intChar = intChar % 187;
-    cryptedText += String.fromCharCode(intChar);
+
+    // Exponentiation modulaire rapide
+    let encryptedChar = 1;
+    for (let j = 0; j < e; j++) {
+      encryptedChar = (encryptedChar * intChar) % n;
+    }
+    cryptedText += intChar + ";";
   }
   return cryptedText;
 }
 
-function decrypt(text){
+function decrypt(text) {
   let uncryptedText = "";
-  for (let i = 0; i < text.length; i ++){
-    let intChar = text.charCodeAt(i);
-    intChar = intChar ** 149;
-    intChar = intChar % 187;
+  let listValsToken = text.split(";");
+  for (let i = 0; i < listValsToken.length - 1; i++) {
+    let intChar = parseInt(listValsToken[i]);
+
+    // Exponentiation modulaire rapide
+    let encryptedChar = 1;
+    for (let j = 0; j < d; j++) {
+      encryptedChar = (encryptedChar * intChar) % n;
+    }
+    //console.log(intChar);
     uncryptedText += String.fromCharCode(intChar);
   }
   return uncryptedText;
-  
 }
 
 async function checkToken(content){
@@ -45,11 +60,16 @@ async function checkToken(content){
     }
   });
   if (user != null && content.token != null){
+    //console.log("A");
     let valToken = decrypt(content.token);
+    //console.log("decrypted : " + valToken);
     let listTokenInfos = valToken.split("@");
+    //console.log(listTokenInfos);
     if (listTokenInfos.length == 2){
+      //console.log("B");
       let timeSinceCreation = Date.now() - parseInt(listTokenInfos[1]);
       if (timeSinceCreation <= 7200000){
+        //console.log("C");
         return true;
       }
     }
@@ -79,29 +99,40 @@ io.on('connection', (socket) => {
     const user = await prisma.User.findFirst({
       where : {
         username : content.username,
-        password : content.password
       }
     });
     if (user != null){
-      let valToken = user.username + ":" + user.id + "@" + toString(Date.now());
-      valToken = encrypt(valToken);
-      const updateUser = await prisma.User.update({
-        where : {
-          id : user.id
-        },
-        data : {
-          token : valToken
+      let password = decrypt(content.password);
+      if (password != null){
+        let saltRounds = 3
+        if (await bcrypt.compare(password, user.password)){
+          let valToken = user.username + ":" + user.id + "@" + Date.now().toString();
+          valToken = encrypt(valToken);
+          const updateUser = await prisma.User.update({
+            where : {
+              id : user.id
+            },
+            data : {
+              token : valToken
+            }
+          })
+          socket.emit('connectionSuccess', {username : user.username, token : valToken})
         }
-      })
-      socket.emit('connectionSuccess', {username : user.username, token : valToken})
+        else {
+          socket.emit('connectionFail', {error : "Incorrect username or password."});
+        }
+      }
+      else {
+        socket.emit('connectionFail', {error : "No password found"});
+      }
     }
     else {
-      socket.emit('connectionFail');
+      socket.emit('connectionFail', {error : "Incorrect username or password."});
     }
   })
 
   socket.on('tokenConnection', async (content) => {
-    if (checkToken(content)){
+    if (await checkToken(content)){
       socket.emit("tokenOK");
     }
     else {
@@ -130,14 +161,22 @@ io.on('connection', (socket) => {
       }
     });
     if (user == null){
-      let newUser = await prisma.user.create({
-        data: {
-          username: content.username,
-          password: content.password,
-          token: ""
-        },
-      })
-      socket.emit("logupSuccess");
+      let password = decrypt(content.password);
+      if (password != null){
+        let saltRounds = 3
+        let hashedPWD = await bcrypt.hash(password, saltRounds)
+        let newUser = await prisma.user.create({
+          data: {
+            username: content.username,
+            password: hashedPWD,
+            token: ""
+          },
+        })
+        socket.emit("logupSuccess");
+      }
+      else {
+        socket.emit('logupFailed', {error : "No password found"});
+      }
     }
     else {
       socket.emit("logupFailed", {error : "This username already exists"});

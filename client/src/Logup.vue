@@ -1,6 +1,6 @@
 <template>
    <div class="flex h-screen w-screen overflow-hidden items-center justify-center">
-        <div class="grid grid-rows-3 p-10 border-2 border-black rounded-xl">
+        <div class="w-96 grid grid-rows-3 p-10 border-2 border-black rounded-xl">
             <div class="h-full w-full font-bold text-5xl text-center pb-3">LOG UP</div>
             <div class="h-full w-full flex flex-col">
                 <div class="w-full h-1/3 relative flex justify-center">
@@ -23,6 +23,7 @@
                 </div>
             </div>
             <div class="h-full w-full pt-3">
+                <div id="textError" class="w-full h-fit text-red-600"></div>
                 <div class="w-full h-1/2 px-5">
                     <button type="button" @click="logup" id="createButton" class="h-full w-full border-2 border-black rounded-md">CREATE</button>
                 </div>
@@ -32,26 +33,31 @@
 </template>
 
 <script setup>
-//TODO : WHAT HAPPENS ON USERNAME ALREADY EXISTING
+//TODO : hasher le password
 
 import { io } from "socket.io-client"
-import { createApp } from 'vue'
-import Main from './Main.vue'
 
-function encrypt(text){
+const n = 3233;
+const e = 17;
+
+function encrypt(text) {
   let cryptedText = "";
-  for (let i = 0; i < text.length; i ++){
+  for (let i = 0; i < text.length; i++) {
     let intChar = text.charCodeAt(i);
-    intChar = intChar ** 29;
-    intChar = intChar % 187;
-    cryptedText += String.fromCharCode(intChar);
+
+    // Exponentiation modulaire rapide
+    let encryptedChar = 1;
+    for (let j = 0; j < e; j++) {
+      encryptedChar = (encryptedChar * intChar) % n;
+    }
+    cryptedText += intChar + ";";
   }
   return cryptedText;
 }
 
 const socket = io("http://localhost:3000");
 
-function logup(){
+async function logup(){
     let username = document.getElementById("usernameInput").value;
     let pwd = encrypt(document.getElementById("pwdInput").value);
     let confirmationPWD = encrypt(document.getElementById("confirmationPWD").value);
@@ -62,5 +68,9 @@ function logup(){
 
 socket.on("logupSuccess", (content) => {
     window.location.href="/login"
+})
+
+socket.on("logupFailed", (content) => {
+    document.getElementById("textError").value = content.error;
 })
 </script>
