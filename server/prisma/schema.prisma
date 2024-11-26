@@ -8,18 +8,31 @@ datasource db {
 }
 
 model User {
-  id       Int    @id @default(autoincrement())
-  username String
-  password String
-  token    String
-  rooms    Room[]
+  id           Int       @id @default(autoincrement())
+  username     String
+  password     String
+  token        String
+  messages     Message[] @relation("UserMessages")
+  createdRooms Room[]    @relation("CreatedRooms")
+  rooms        Room[]    @relation("UserRooms")
 }
 
 model Room {
-  id       Int    @id @default(autoincrement())
+  id       Int       @id @default(autoincrement())
   name     String
   code     String
   password String
   userId   Int
-  user     User   @relation(fields: [userId], references: [id])
+  messages Message[] @relation("RoomMessages")
+  user     User      @relation("CreatedRooms", fields: [userId], references: [id])
+  users    User[]    @relation("UserRooms")
+}
+
+model Message {
+  id     Int    @id @default(autoincrement())
+  userId Int
+  roomId Int
+  date   String
+  room   Room   @relation("RoomMessages", fields: [roomId], references: [id])
+  user   User   @relation("UserMessages", fields: [userId], references: [id])
 }

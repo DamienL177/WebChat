@@ -9,18 +9,84 @@
         </div>
       </div>
     </div>
+    <div id="createRoomDiv" class="hidden absolute w-screen h-screen bg-gray-500/60">
+      <div class="absolute w-96 h-96 -translate-x-1/2 left-1/2 -translate-y-1/2 top-1/2 bg-white border-2 border-black rounded-3xl">
+        <div class="w-full h-1/4 font-bold text-5xl flex items-center justify-center">Create room</div>
+        <div class="w-full h-3/4 p-5">
+          <div class="w-full h-2/3 pb-5">
+            <div class="w-full h-1/3 relative flex justify-center">
+              <div class="h-full w-3/4 pt-5">
+                <input name="nameInput" id="nameInput" type="text" class="w-full border-2 border-black rounded-sm">
+              </div>
+              <label for="nameInput" class="absolute top-0 left-8 text-md bg-white rounded-sm">Name</label>
+            </div>
+            <div class="hidden w-full h-1/3 relative flex justify-center">
+              <div class="h-full w-3/4 pt-5">
+                <input name="codeRoom" id="codeRoom" type="text" class="w-full border-2 border-black rounded-sm" disabled>
+              </div>
+              <label for="codeRoom" class="absolute top-0 left-8 text-md bg-white rounded-sm">code</label>
+            </div>
+            <div class="w-full h-1/3 relative flex justify-center">
+              <div class="h-full w-3/4 pt-5">
+                <input name="pwdInput" id="pwdInput" type="password" class="w-full border-2 border-black rounded-sm">
+              </div>
+              <label for="pwdInput" class="absolute top-0 left-8 text-md bg-white rounded-sm">Password</label>
+            </div>
+            <div class="w-full h-1/3 relative flex justify-center">
+              <div class="h-full w-3/4 pt-5">
+                <input name="confirmationPWD" id="confirmationPWD" type="password" class="w-full border-2 border-black rounded-sm">
+              </div>
+              <label for="confirmationPWD" class="absolute top-0 left-8 text-md bg-white rounded-sm">Confirmation of Password</label>
+            </div>
+          </div>
+          <div class="w-full h-1/3 grid grid-cols-2 gap-5 pb-6">
+            <button type="button" @click="cancelRoomCreation" id="cancelRoomCreation" class="h-full w-full border-2 border-black rounded-md">CANCEL</button>
+            <button type="button" @click="createRoom" id="createButton" class="h-full w-full border-2 border-black rounded-md">CREATE</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="connectRoomDiv" class="hidden absolute w-screen h-screen bg-gray-500/60">
+      <div class="absolute w-96 h-96 -translate-x-1/2 left-1/2 -translate-y-1/2 top-1/2 bg-white border-2 border-black rounded-3xl">
+        <div class="w-full h-1/4 font-bold text-5xl flex items-center justify-center">Add room</div>
+        <div class="w-full h-3/4 p-5">
+          <div class="w-full h-2/3 pb-5">
+            <div class="w-full h-1/3 relative flex justify-center">
+              <div class="h-full w-3/4 pt-5">
+                <input name="codeRoom" id="connectCodeRoom" type="text" class="w-full border-2 border-black rounded-sm">
+              </div>
+              <label for="codeRoom" class="absolute top-0 left-8 text-md bg-white rounded-sm">code</label>
+            </div>
+            <div class="w-full h-1/3 relative flex justify-center">
+              <div class="h-full w-3/4 pt-5">
+                <input name="pwdInput" id="connectPwdInput" type="password" class="w-full border-2 border-black rounded-sm">
+              </div>
+              <label for="pwdInput" class="absolute top-0 left-8 text-md bg-white rounded-sm">Password</label>
+            </div>
+          </div>
+          <div class="w-full h-1/3 grid grid-cols-2 gap-5 pb-6">
+            <button type="button" @click="cancelRoomConnexion" id="cancelRoomConnexion" class="h-full w-full border-2 border-black rounded-md">CANCEL</button>
+            <button type="button" @click="connectRoom" id="connectButton" class="h-full w-full border-2 border-black rounded-md">CONNECT</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="w-1/4 h-full border-r-2 border-black flex flex-col">
       <div class="w-full h-36 text-center text-5xl flex justify-center items-center font-bold">ROOMS</div>
-      <div class="w-full h-16 flex justify-center">
-        <button id="addRoomButton" class="h-full aspect-square" type="button">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="green" class="h-full w-full">
-            <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 9a.75.75 0 0 0-1.5 0v2.25H9a.75.75 0 0 0 0 1.5h2.25V15a.75.75 0 0 0 1.5 0v-2.25H15a.75.75 0 0 0 0-1.5h-2.25V9Z" clip-rule="evenodd" />
-          </svg>
+      <div class="w-full h-16 px-10 grid grid-cols-2 gap-10 justify-center items-center">
+        <button @click="openCreateRoomDiv" id="addRoomButton" class="h-full font-bold border-2 border-black rounded-lg" type="button">
+          CREATE
+        </button>
+        <button @click="changeVisibilityConnectRoom" id="connectRoomButton" class="h-full font-bold border-2 border-black rounded-lg" type="button">
+          ADD
         </button>
       </div>
-      <div class="w-full h-full overflow-y-auto room" idRoom="0">
+      <div id="generalRoom" @click="joinGeneral" class="w-full h-fit" idRoom="0">
         <div class="w-full h-20 text-xl flex justify-center items-center cursor-pointer">general</div>
       </div>
+      <ul id="listRooms" class="w-full h-2/3 overflow-y-auto">
+
+      </ul>
     </div>
     <div class="w-3/4 h-full flex flex-col">
       <div class="h-16 w-full grid grid-cols-12 items-center pl-5">
@@ -42,11 +108,11 @@
           <div class="w-3/4" id="username">Username</div>
         </button>
       </div>
+      <div class="hidden w-full h-fit pr-20 mt-5 flex flex-col" ref="exempleMessage" id="exempleMessage">
+        <div class="h-10 w-40 text-sm flex items-center font-bold border-2 border-l-0 border-black rounded-r-lg" tag="name">Name</div>
+        <div class="min-w-40 w-fit text-xs flex items-center border-2 border-l-0 border-black rounded-r-lg" tag="message">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut vel nisl sem. Nulla orci turpis, tempus interdum imperdiet vel, sollicitudin id libero. Sed ac laoreet justo. Sed lacinia sem lacus, ac suscipit erat mollis at. Praesent gravida, lectus id elementum commodo, metus libero porta odio, vitae volutpat lorem nibh nec erat. Ut tincidunt efficitur enim gravida posuere. Vestibulum id orci congue, ultricies elit eu, hendrerit purus. Praesent porttitor erat et suscipit posuere. Nam porttitor ex ante, nec ultricies justo pellentesque in. Morbi lobortis posuere mauris, at fringilla odio cursus in. Praesent in nulla vel nisl consectetur fringilla id at odio. Suspendisse id ipsum non turpis volutpat aliquet ut a turpis. Maecenas quis quam pellentesque, auctor mi ut, dictum eros. Vestibulum sed purus at eros bibendum suscipit. Sed leo mauris, bibendum quis neque ac, fringilla auctor urna. Mauris consequat eget ligula sed laoreet.</div>
+      </div>
       <div class="w-full h-full overflow-y-auto border-y-2 border-black flex flex-col" ref="listMessages" id="listMessages">
-        <div class="hidden w-full h-fit pr-20 mt-5 flex flex-col" ref="exempleMessage" id="exempleMessage">
-          <div class="h-10 w-40 text-sm flex items-center font-bold border-2 border-l-0 border-black rounded-r-lg" tag="name">Name</div>
-          <div class="min-w-40 w-fit text-xs flex items-center border-2 border-l-0 border-black rounded-r-lg" tag="message">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut vel nisl sem. Nulla orci turpis, tempus interdum imperdiet vel, sollicitudin id libero. Sed ac laoreet justo. Sed lacinia sem lacus, ac suscipit erat mollis at. Praesent gravida, lectus id elementum commodo, metus libero porta odio, vitae volutpat lorem nibh nec erat. Ut tincidunt efficitur enim gravida posuere. Vestibulum id orci congue, ultricies elit eu, hendrerit purus. Praesent porttitor erat et suscipit posuere. Nam porttitor ex ante, nec ultricies justo pellentesque in. Morbi lobortis posuere mauris, at fringilla odio cursus in. Praesent in nulla vel nisl consectetur fringilla id at odio. Suspendisse id ipsum non turpis volutpat aliquet ut a turpis. Maecenas quis quam pellentesque, auctor mi ut, dictum eros. Vestibulum sed purus at eros bibendum suscipit. Sed leo mauris, bibendum quis neque ac, fringilla auctor urna. Mauris consequat eget ligula sed laoreet.</div>
-        </div>
       </div>
       <div class="h-20 w-full grid grid-cols-6 items-center">
         <div class="col-span-5 w-full h-full">
@@ -69,6 +135,24 @@
 import { io } from "socket.io-client"
 import { createApp } from 'vue'
 import Login from './Login.vue'
+
+const n = 3233;
+const e = 17;
+
+function encrypt(text) {
+  let cryptedText = "";
+  for (let i = 0; i < text.length; i++) {
+    let intChar = text.charCodeAt(i);
+
+    // Exponentiation modulaire rapide
+    let encryptedChar = 1;
+    for (let j = 0; j < e; j++) {
+      encryptedChar = (encryptedChar * intChar) % n;
+    }
+    cryptedText += intChar + ";";
+  }
+  return cryptedText;
+}
 
 let tokenOK = false;
 
@@ -102,6 +186,7 @@ function showMessage(user, message, isLocalUser){
 
 let token = sessionStorage.getItem("chatRoomToken");
 let username = sessionStorage.getItem("chatRoomUsername");
+sessionStorage.setItem("room", "general");
 
 let socket;
 if (username != null && username != "" && token != null && token != ""){
@@ -112,6 +197,7 @@ if (username != null && username != "" && token != null && token != ""){
   socket.on("tokenOK", () => {
     tokenOK = true;
     document.getElementById("username").textContent = username;
+    socket.emit("roomKnown", {username : username, token : token});
   })
 
   socket.on("tokenFail", () => {
@@ -131,9 +217,36 @@ if (username != null && username != "" && token != null && token != ""){
       logout();
     }
   })
+
+  socket.on("roomCode", (content) => {
+    document.getElementById("codeRoom").value = content.code;
+    changeVisibilityCreateRoom();
+  })
+
+  socket.on("roomAccessible", (content) => {
+    let roomDiv = document.getElementById("generalRoom").cloneNode(true);
+    roomDiv.removeAttribute("id");
+    roomDiv["creator"] = content.creator;
+    roomDiv["code"] = content.code;
+    roomDiv.firstChild.innerText = content.name;
+    roomDiv.addEventListener("click", () => {
+      socket.emit("leaveRoom", {code : sessionStorage.getItem("room")});
+      socket.emit("joinRoom", {code : content.code});
+      let div = document.getElementById("listMessages");
+      div.innerHTML = "";
+      sessionStorage.setItem("room", content.code);
+    })
+    document.getElementById("listRooms").appendChild(roomDiv);
+  })
 }
 else {
   window.location.href = "/login";
+}
+
+function joinGeneral(){
+  socket.emit("leaveRoom", {code : sessionStorage.getItem("room")});
+  let div = document.getElementById("listMessages");
+  div.innerHTML = "";
 }
 
 function logout(){
@@ -152,22 +265,84 @@ function changeVisibilityLogout(){
   }
 }
 
-function sendMessage(){
-    //console.log("test");
-    if (tokenOK){
-      let user = "User"
-      let message = document.getElementById("writtenMessage").value;
-      let token = "";
-
-      if (message.trim()){
-        showMessage(user, message, true);
-        socket.emit("message", {username : user, message : message, token : token})
-      }
-      document.getElementById("writtenMessage").value = "";
-    }
-    else {
-      alert("Token expired.");
-      logout();
-    }
+function changeVisibilityCreateRoom(){
+  let div = document.getElementById("createRoomDiv");
+  if (div.classList.contains("hidden")){
+    div.classList.remove("hidden");
   }
+  else {
+    div.classList.add("hidden");
+  }
+}
+
+function changeVisibilityConnectRoom(){
+  let div = document.getElementById("connectRoomDiv");
+  if (div.classList.contains("hidden")){
+    div.classList.remove("hidden");
+  }
+  else {
+    div.classList.add("hidden");
+  }
+}
+
+function sendMessage(){
+  //console.log("test");
+  if (tokenOK){
+    let user = username;
+    let message = document.getElementById("writtenMessage").value;
+    let token = "";
+
+    if (message.trim()){
+      showMessage(user, message, true);
+      socket.emit("message", {username : user, message : message, token : token, room : sessionStorage.getItem("room")})
+    }
+    document.getElementById("writtenMessage").value = "";
+  }
+  else {
+    alert("Token expired.");
+    logout();
+  }
+}
+
+function openCreateRoomDiv(){
+  socket.emit("roomCreationAsk", {username : username, token : token});
+}
+
+function cancelRoomCreation(){
+  document.getElementById("codeRoom").value = "";
+  document.getElementById("nameInput").value = "";
+  document.getElementById("pwdInput").value = "";
+  document.getElementById("confirmationPWD").value = "";
+  changeVisibilityCreateRoom();
+}
+
+function createRoom(){
+  let code = document.getElementById("codeRoom").value;
+  let roomName = document.getElementById("nameInput").value;
+  let pwd = encrypt(document.getElementById("pwdInput").value);
+  let confirmationPWD = encrypt(document.getElementById("confirmationPWD").value);
+  if (code != null && roomName != null && pwd != null && pwd == confirmationPWD){
+    socket.emit("roomCreation", {username : username, token : token, code : code, name : roomName, password : pwd});
+    document.getElementById("codeRoom").value = "";
+    document.getElementById("nameInput").value = "";
+    document.getElementById("pwdInput").value = "";
+    document.getElementById("confirmationPWD").value = "";
+    changeVisibilityCreateRoom();
+  }
+}
+
+function cancelRoomConnexion(){
+  document.getElementById("connectCodeRoom").value = "";
+  document.getElementById("connectPwdInput").value = "";
+  changeVisibilityConnectRoom();
+}
+
+function connectRoom(){
+  let code = document.getElementById("connectCodeRoom").value;
+  let pwd = encrypt(document.getElementById("connectPwdInput").value);
+  if (code != null && pwd != null){
+    socket.emit("logToRoom", {username : username, token : token, code : code, password : pwd});
+    cancelRoomConnexion();
+  }
+}
 </script>
