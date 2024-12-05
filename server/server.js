@@ -7,14 +7,6 @@ import bcrypt from 'bcryptjs'
 import { hash } from 'crypto'
 
 const prisma = new PrismaClient()
-/*
-let newUser = await prisma.user.create({
-  data: {
-    username: 'test',
-    password: 'Test',
-    token: ""
-  },
-})*/
 
 const n = 3233;
 const e = 17;
@@ -155,10 +147,50 @@ io.on('connection', (socket) => {
     }
   })
 
-  socket.on("joinRoom", (content) => {
+  socket.on("joinRoom", async (content) => {
     socket.leave("general");
     socket.join(content.code);
-    socket.emit("roomJoined");
+    let roomHistory = [];
+    const currentUser = await prisma.User.findFirst({
+      where : {
+        username : content.username,
+      }
+    });
+    const room = await prisma.room.findFirst({
+      where : {
+        code : content.code
+      },
+      include: { 
+        messages: {
+          orderBy : {
+            date : "desc"
+          },
+          take : 25
+        } 
+      }
+    });
+    if (room != null){
+      if (room.messages != undefined){
+        for (const message of room.messages) {
+          const user = await prisma.user.findFirst({
+            where: {
+              id: message.userId,
+            },
+          });
+          let messageSent = {};
+          if (currentUser.id == user.id) {
+            messageSent["currentUser"] = true;
+          } else {
+            messageSent["currentUser"] = false;
+          }
+          messageSent["message"] = message.content;
+          messageSent["username"] = user.username;
+          roomHistory.push(messageSent);
+        }
+      }
+    }
+    roomHistory.reverse();
+    socket.emit("roomJoined", {roomHistory : roomHistory, roomCode : content.code});
   })
 
   socket.on("leaveRoom", (content) => {
@@ -175,11 +207,35 @@ io.on('connection', (socket) => {
     }
   })
 
-  socket.on('message', (content) => {
+  socket.on('message', async (content) => {
     //console.log(content.user + " sent " + content.message)
-    if (checkToken(content)){
-      console.log(content.room);
+    if (checkToken(content) && content.room != null && content.room != ""){
       socket.broadcast.to(content.room).emit('message', {sender : content.username,message : content.message})
+      //console.log(content.room);
+      const room = await prisma.room.findFirst({
+        where : {
+          code : content.room
+        }
+      })
+      //console.log(room);
+      if (room != null){
+        let user = await prisma.User.findFirst({
+          where : {
+            username : content.username,
+          }
+        });
+        if (user != null){
+          //console.log(user);
+          let newMessage = await prisma.message.create({
+            data: {
+              date : Date.now().toString(),
+              content : content.message,
+              userId : user.id,
+              roomId : room.id
+            },
+          })
+        }
+      }
     }
     else {
       socket.emit("tokenFail");
@@ -290,17 +346,15 @@ io.on('connection', (socket) => {
               socket.emit("roomAccessible", {name : content.name, code : content.code, creator : true})
             }
             else {
-              console.log("1");
               socket.emit("Error");
             }
           }
           else {
-            console.log("2");
             socket.emit("Error");
           }
         }
         else {
-          console.log("3");
+          // TODO : what to do on error
           socket.emit("Error");
         }
       }

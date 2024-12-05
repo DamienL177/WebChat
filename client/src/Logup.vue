@@ -58,10 +58,12 @@ function encrypt(text) {
 const socket = io("http://localhost:3000");
 
 async function logup(){
+    console.log("1");
     let username = document.getElementById("usernameInput").value;
     let pwd = encrypt(document.getElementById("pwdInput").value);
     let confirmationPWD = encrypt(document.getElementById("confirmationPWD").value);
     if (username != null && pwd != null && pwd == confirmationPWD){
+        console.log("2");
         socket.emit("logupAttempt", {username : username, password : pwd});
     }
 }
@@ -71,6 +73,6 @@ socket.on("logupSuccess", (content) => {
 })
 
 socket.on("logupFailed", (content) => {
-    document.getElementById("textError").value = content.error;
+    document.getElementById("textError").innerText = content.error;
 })
 </script>

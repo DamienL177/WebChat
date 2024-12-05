@@ -29,10 +29,11 @@ model Room {
 }
 
 model Message {
-  id     Int    @id @default(autoincrement())
-  userId Int
-  roomId Int
-  date   String
-  room   Room   @relation("RoomMessages", fields: [roomId], references: [id])
-  user   User   @relation("UserMessages", fields: [userId], references: [id])
+  id       Int       @id @default(autoincrement())
+  date     String
+  content  String
+  userId   Int
+  user     User      @relation("UserMessages", fields: [userId], references: [id])
+  roomId   Int
+  room     Room      @relation("RoomMessages", fields: [roomId], references: [id])
 }

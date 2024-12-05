@@ -91,7 +91,7 @@
     <div class="w-3/4 h-full flex flex-col">
       <div class="h-16 w-full grid grid-cols-12 items-center pl-5">
         <div class="col-span-2 h-16 w-full text-xl flex items-center">RoomCode: </div>
-        <div id="roomCode" class="col-span-6 h-16 w-full text-2xl font-bold flex items-center">000000</div>
+        <div id="roomCode" class="col-span-6 h-16 w-full text-2xl font-bold flex items-center">general</div>
         <div class="col-span-1 w-full h-16 invisible">
           <button class="h-full aspect-square p-2" type="button" id="roomParameterButton">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" class="w-full h-full rounded-full bg-gray-500">
@@ -209,7 +209,7 @@ if (username != null && username != "" && token != null && token != ""){
 
   socket.on("message", (content) => {
     if (tokenOK){
-      showMessage(content.user, content.message, false);
+      showMessage(content.sender, content.message, false);
     }
     else {
       // TODO : what to do when token not ok
@@ -231,12 +231,22 @@ if (username != null && username != "" && token != null && token != ""){
     roomDiv.firstChild.innerText = content.name;
     roomDiv.addEventListener("click", () => {
       socket.emit("leaveRoom", {code : sessionStorage.getItem("room")});
-      socket.emit("joinRoom", {code : content.code});
+      socket.emit("joinRoom", {code : content.code, username : username});
       let div = document.getElementById("listMessages");
       div.innerHTML = "";
+      document.getElementById("writtenMessage")["disabled"] = true;
       sessionStorage.setItem("room", content.code);
     })
     document.getElementById("listRooms").appendChild(roomDiv);
+  })
+
+  socket.on("roomJoined", (content) => {
+    let roomHistory = content.roomHistory;
+    roomHistory.forEach(message => {
+      showMessage(message.username, message.message, message.currentUser);
+    });
+    document.getElementById("roomCode").innerText = content.roomCode;
+    document.getElementById("writtenMessage").removeAttribute("disabled");
   })
 }
 else {
@@ -245,8 +255,11 @@ else {
 
 function joinGeneral(){
   socket.emit("leaveRoom", {code : sessionStorage.getItem("room")});
+  socket.emit("joinRoom", {code : "general"});
   let div = document.getElementById("listMessages");
   div.innerHTML = "";
+  document.getElementById("writtenMessage")["disabled"] = true;
+  sessionStorage.setItem("room", "general");
 }
 
 function logout(){
@@ -288,13 +301,12 @@ function changeVisibilityConnectRoom(){
 function sendMessage(){
   //console.log("test");
   if (tokenOK){
-    let user = username;
     let message = document.getElementById("writtenMessage").value;
     let token = "";
 
     if (message.trim()){
-      showMessage(user, message, true);
-      socket.emit("message", {username : user, message : message, token : token, room : sessionStorage.getItem("room")})
+      showMessage(username, message, true);
+      socket.emit("message", {username : username, message : message, token : token, room : sessionStorage.getItem("room")})
     }
     document.getElementById("writtenMessage").value = "";
   }
