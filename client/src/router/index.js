@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import Login from '/src/Login.vue'
-import Main from '/src/Main.vue'
-import Logup from '/src/Logup.vue'
+import Login from '/src/views/Login.vue'
+import Main from '/src/views/Main.vue'
+import Logup from '/src/views/Logup.vue'
 
 const routes = [
    {
@@ -20,8 +20,8 @@ const routes = [
 ]
 
 const router = createRouter({
-   history: createWebHistory('/'),
+   history: createWebHistory(),
    routes
 })
 
-export default router
+export default router;
