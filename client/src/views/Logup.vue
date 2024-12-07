@@ -42,8 +42,8 @@
 
 <script setup>
 //TODO : hasher le password
-
 import { io } from "socket.io-client"
+import router from '../router'
 
 const n = 3233;
 const e = 17;
@@ -75,7 +75,7 @@ async function logup() {
 }
 
 socket.on("logupSuccess", (content) => {
-    window.location.href = "/login"
+    router.replace("/login");
 })
 
 socket.on("logupFailed", (content) => {

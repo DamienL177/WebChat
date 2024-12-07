@@ -39,6 +39,7 @@
 <script setup>
 // TODO : hasher le password
 import { io } from "socket.io-client"
+import router from '../router'
 
 const n = 3233;
 const e = 17;
@@ -59,7 +60,7 @@ function encryption(text) {
 }
 
 function toLogUp() {
-    window.location.href = "/logup"
+    router.replace("/logup");
 }
 
 const socket = io("http://localhost:3100");
@@ -86,7 +87,7 @@ socket.on("connectionSuccess", (content) => {
     sessionStorage.setItem("chatRoomUsername", content.username);
     sessionStorage.setItem("chatRoomToken", content.token);
     socket.close();
-    window.location.href = "/";
+    router.replace("/");
 })
 
 </script>

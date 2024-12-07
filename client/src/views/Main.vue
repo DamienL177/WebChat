@@ -183,6 +183,7 @@
 
 <script setup>
 import { io } from "socket.io-client"
+import router from '../router'
 
 const n = 3233;
 const e = 17;
@@ -306,7 +307,7 @@ if (username != null && username != "" && token != null && token != "") {
   })
 }
 else {
-  window.location.href = "/login";
+  router.replace("/login");
 }
 
 // Joining the general room
@@ -323,7 +324,7 @@ function joinGeneral() {
 function logout() {
   sessionStorage.removeItem("chatRoomToken");
   sessionStorage.removeItem("chatRoomUsername");
-  window.location.href = "/login";
+  router.replace("/login");
 }
 
 // change the visibility on the layout window
